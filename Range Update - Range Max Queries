@@ -1,0 +1,107 @@
+hacker earth problem...https://www.hackerearth.com/problem/algorithm/range-update-range-max-queries/
+#include <bits/stdc++.h>
+using namespace std;
+
+// Segment Trees: Range Minimum Query & Range Update
+
+int n; // size of the array
+vector<int> arr, segment, lazy;
+
+void buildSegmentTree(int ind, int left, int right) {
+    // Base Case
+    if (left == right) {
+        segment[ind] = arr[left];
+        return;
+    }
+    int mid = (left + right) / 2;
+    buildSegmentTree(2 * ind + 1, left, mid);
+    buildSegmentTree(2 * ind + 2, mid + 1, right);
+    segment[ind] = min(segment[2 * ind + 1], segment[2 * ind + 2]);
+}
+
+void rangeUpdate(int ind, int left, int right, int l, int r, int val) {
+    if (lazy[ind] != 0) {
+        segment[ind] += lazy[ind];
+        if (left != right) {
+            lazy[2 * ind + 1] += lazy[ind];
+            lazy[2 * ind + 2] += lazy[ind];
+        }
+        lazy[ind] = 0;
+    }
+
+    // If range is completely outside
+    if (r < left || right < l || left > right) return;
+
+    // If range is completely inside
+    if (left >= l && right <= r) {
+        segment[ind] += val;
+        if (left != right) {
+            lazy[2 * ind + 1] += val;
+            lazy[2 * ind + 2] += val;
+        }
+        return;
+    }
+
+    // If range is partially inside or partially outside
+    int mid = (left + right) / 2;
+    rangeUpdate(2 * ind + 1, left, mid, l, r, val);
+    rangeUpdate(2 * ind + 2, mid + 1, right, l, r, val);
+    segment[ind] = min(segment[2 * ind + 1], segment[2 * ind + 2]);
+}
+
+int queryminLazy(int ind, int left, int right, int l, int r) {
+    if (lazy[ind] != 0) {
+        segment[ind] += lazy[ind];
+        if (left != right) {
+            lazy[2 * ind + 1] += lazy[ind];
+            lazy[2 * ind + 2] += lazy[ind];
+        }
+        lazy[ind] = 0;
+    }
+
+    // If range is completely outside
+    if (r < left || right < l || left > right) return INT_MAX;
+
+    // If range is completely inside
+    if (left >= l && right <= r) {
+        return segment[ind];
+    }
+
+    // If range is partially inside or partially outside
+    int mid = (left + right) / 2;
+    int leftSide = queryminLazy(2 * ind + 1, left, mid, l, r);
+    int rightSide = queryminLazy(2 * ind + 2, mid + 1, right, l, r);
+    return min(leftSide, rightSide);
+}
+
+void buildSegment(int N) {
+    n = N;
+    arr.resize(n);
+    segment.resize(4 * n, 0);
+    lazy.resize(4 * n, 0);
+    buildSegmentTree(0, 0, n - 1);
+}
+
+int main() {
+    int n, q;
+    cin >> n >> q;
+    arr.resize(n);
+    for (int i = 0; i < n; i++) cin >> arr[i];
+
+    buildSegment(n);
+
+    while (q--) {
+        char x;
+        int l, r;
+        cin >> x >> l >> r;
+        if (x == 'q') {
+            cout << queryminLazy(0, 0, n - 1, l - 1, r - 1) << endl;
+        } else {
+            int val;
+            cin >> val;
+            rangeUpdate(0, 0, n - 1, l - 1, r - 1, val);
+        }
+    }
+
+    return 0;
+}
