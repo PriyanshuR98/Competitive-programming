@@ -1,0 +1,30 @@
+https://leetcode.com/problems/corporate-flight-bookings/
+
+if initally not given a array of zeros, we convert the array to diff_array
+by for(int i=n-1;i>0;i--) arr[i]=arr[i]-arr[i-1];
+
+// the logic of difference array is to use that effect in l,r and we need the cancelling effect at r+1, more of like bullet fired at r+1 in opp direction to what was initally fired at l
+
+class Solution {
+public:
+    vector<int> corpFlightBookings(vector<vector<int>>& bookings, int n) {
+            // ranged query using difference array technique.
+        vector<int>diff_array(n,0);
+        for(auto it:bookings)
+        {
+            int l=(it[0]-1);
+            int r=(it[1]-1);
+            int val=it[2];
+            diff_array[l]+=val;
+            if(r+1<n) diff_array[r+1]-=val;
+        }
+
+        vector<int>pref(n,0);
+        pref[0]=diff_array[0];
+        for(int i=1;i<diff_array.size();i++)  pref[i]=pref[i-1]+diff_array[i];
+
+        return pref;
+        
+        
+    }
+};
