@@ -1,1 +1,51 @@
 
+
+class SegmentTree {
+public:
+    vector<int> tree;
+    int n;
+    const int INF = INT_MAX;
+
+    // Constructor
+    SegmentTree(vector<int>& arr) {
+        n = arr.size();
+        tree.resize(4 * n);
+        build(arr, 0, 0, n - 1);
+    }
+
+    // Function to build the Segment Tree
+    void build(vector<int>& arr, int node, int start, int end) {
+        if (start == end) {
+            tree[node] = arr[start];
+        } else {
+            int mid = (start + end) / 2;
+            build(arr, 2 * node + 1, start, mid);
+            build(arr, 2 * node + 2, mid + 1, end);
+
+            // bitwise AND of the children nodes
+            tree[node] = tree[2 * node + 1] & tree[2 * node + 2];
+        }
+    }
+
+    // Overloading query function to be used recursively
+    int query(int l, int r) {
+        return query(0, 0, n - 1, l, r);
+    }
+
+    // query function to get bitwise AND of the range
+    int query(int node, int start, int end, int l, int r) {
+        if (r < start || end < l) {
+            return INF;
+        }
+        if (l <= start && end <= r) {
+            return tree[node];
+        }
+        int mid = (start + end) / 2;
+        int p1 = query(2 * node + 1, start, mid, l, r);
+        int p2 = query(2 * node + 2, mid + 1, end, l, r);
+
+        // bitwise AND operation result
+        return p1 & p2;
+    }
+};
+
